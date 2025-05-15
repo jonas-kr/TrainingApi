@@ -27,7 +27,7 @@ const getHomeFeed = async (req, res) => {
                 model: 'User',
                 localField: 'userId',
                 foreignField: 'userId',
-                select: "-password -_id -__v"
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
             }).exec();
 
         return res.status(200).json({
@@ -60,7 +60,7 @@ const getSessions = async (req, res) => {
                 model: 'User',
                 localField: 'userId',
                 foreignField: 'userId',
-                select: "-password -_id -__v"
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
             }).exec();
 
         return res.status(200).json({
@@ -239,13 +239,56 @@ const getSessionDetails = async (req, res) => {
             model: 'User',
             localField: 'userId',
             foreignField: 'userId',
-            select: "-password -_id -__v"
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
         }).exec();
 
         if (!session) return res.status(404).json({ message: "Session not found" })
 
         //stats
         res.status(200).json({ session, heatmap: calcHeatmap(session.performedExercises) })
+
+    } catch (error) {
+        res.status(500).json({ message: `Server error: ${error.message}` })
+    }
+}
+
+const getSessionLikes = async (req, res) => {
+    const { sessionId } = req.params
+    if (!sessionId) return res.status(400).json({ message: "No Id was provided" });
+    try {
+        const session = await Session.findOne({ sessionId }).populate({
+            path: 'likes',
+            model: 'User',
+            localField: 'userId',
+            foreignField: 'userId',
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+        }).exec();
+
+        if (!session) return res.status(404).json({ message: "Session not found" })
+
+        //stats
+        res.status(200).json({ Likes: session.likes })
+
+    } catch (error) {
+        res.status(500).json({ message: `Server error: ${error.message}` })
+    }
+}
+const getSessionComments = async (req, res) => {
+    const { sessionId } = req.params
+    if (!sessionId) return res.status(400).json({ message: "No Id was provided" });
+    try {
+        const session = await Session.findOne({ sessionId }).populate({
+            path: 'likes',
+            model: 'User',
+            localField: 'userId',
+            foreignField: 'userId',
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+        }).exec();
+
+        if (!session) return res.status(404).json({ message: "Session not found" })
+
+        //stats
+        res.status(200).json({ Likes: session.likes })
 
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` })
@@ -304,5 +347,5 @@ const getUserStats = async (req, res) => {
 
 module.exports = {
     getSessions, getHomeFeed, addSession, editSession, deleteSession, likeUnlikeSession,
-    addComment, getSessionDetails, getUserStats
+    addComment, getSessionDetails, getUserStats, getSessionLikes,getSessionComments
 }

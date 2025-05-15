@@ -51,7 +51,7 @@ const getTopRatedPrograms = async (req, res) => {
 
         if (!topPrograms) return res.status(404).json({ message: "No programs Found" })
         res.status(200).json(topPrograms);
-    
+
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` });
     }
@@ -229,7 +229,7 @@ const getProgram = async (req, res) => {
             model: 'User',
             localField: 'userId',
             foreignField: 'userId',
-            select: "-password -_id -__v -following -followers -favoriteExercises"
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
         }).populate({
             path: 'workouts.exercises.exercise',
             model: 'Exercise',
