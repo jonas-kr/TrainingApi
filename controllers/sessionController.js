@@ -49,7 +49,13 @@ const getSessions = async (req, res) => {
 
         const sessions = await Session.find({ user: userId })
             .skip((page - 1) * limit)
-            .limit(limit);
+            .limit(limit).populate({
+                path: 'user',
+                model: 'User',
+                localField: 'userId',
+                foreignField: 'userId',
+                select: "-password -_id -__v"
+            }).exec();
 
         return res.status(200).json({
             sessions,
@@ -67,7 +73,7 @@ const addSession = async (req, res) => {
     const { program, title, description, imageUrl, date, duration, performedExercises } = req.body
     const userId = req.user.userId
 
-    if (!program || !title || !description || !date || !duration || !performedExercises) {
+    if (!title) {
         return res.status(400).json({ message: "All fields must be filled" })
     }
     try {
@@ -222,6 +228,12 @@ const getSessionDetails = async (req, res) => {
             localField: 'exerciseId',
             foreignField: 'exerciseId',
             select: "primaryMuscle secondaryMuscles exerciseName exerciseId imageUrl"
+        }).populate({
+            path: 'user',
+            model: 'User',
+            localField: 'userId',
+            foreignField: 'userId',
+            select: "-password -_id -__v"
         }).exec();
 
         if (!session) return res.status(404).json({ message: "Session not found" })
