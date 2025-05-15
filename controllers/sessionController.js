@@ -22,7 +22,13 @@ const getHomeFeed = async (req, res) => {
             user: { $in: allUserIds }
         })
             .skip((page - 1) * limit)
-            .limit(limit);
+            .limit(limit).populate({
+                path: 'user',
+                model: 'User',
+                localField: 'userId',
+                foreignField: 'userId',
+                select: "-password -_id -__v"
+            }).exec();
 
         return res.status(200).json({
             sessions,
