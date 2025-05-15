@@ -58,7 +58,7 @@ const getTopRatedPrograms = async (req, res) => {
 
 
 const addProgram = async (req, res) => {
-    const { name, description, level, goal, daysPerWeek, isPrivate } = req.body
+    const { name, description, level, goal, daysPerWeek, isPrivate, imageUrl } = req.body
     const userId = req.user.userId
 
     if (!name) {
@@ -66,7 +66,7 @@ const addProgram = async (req, res) => {
     }
     try {
         const program = await Program.create({
-            name, description, level, goal, daysPerWeek, isPrivate, createdBy: userId, savedBy: userId
+            name, description, level, goal, daysPerWeek, isPrivate, createdBy: userId, savedBy: userId, imageUrl
         })
         res.status(201).json({ message: "Program succesfully created", program })
     } catch (error) {
@@ -76,7 +76,7 @@ const addProgram = async (req, res) => {
 }
 
 const updateProgram = async (req, res) => {
-    const { name, description, level, goal, daysPerWeek, isPrivate, workouts } = req.body;
+    const { name, description, level, goal, daysPerWeek, isPrivate, imageUrl } = req.body;
     const userId = req.user.userId;
     const { programId } = req.params
 
@@ -89,6 +89,7 @@ const updateProgram = async (req, res) => {
         if (description) program.description = description;
         if (level) program.level = level;
         if (goal) program.goal = goal;
+        if (imageUrl) program.imageUrl = imageUrl;
         if (daysPerWeek) program.daysPerWeek = daysPerWeek;
         program.isPrivate = isPrivate;
 
