@@ -160,7 +160,7 @@ const resetPassword = async (req, res) => {
         user.resetCode = null;
         await user.save();
 
-        const { password, ...userWithNoPass } = user._doc
+        const { password, resetCode, ...userWithNoPass } = user._doc
         res.json({ message: "User password is updated successfully", user: userWithNoPass });
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` });
