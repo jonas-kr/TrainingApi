@@ -228,6 +228,12 @@ const getProgram = async (req, res) => {
             localField: 'userId',
             foreignField: 'userId',
             select: "-password -_id -__v -following -followers -favoriteExercises"
+        }).populate({
+            path: 'workouts.exercises.exercise',
+            model: 'Exercise',
+            localField: 'exerciseId',
+            foreignField: 'exerciseId',
+            select: "-_id -__v -instructions"
         }).exec();
 
 
