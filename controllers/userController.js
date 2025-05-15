@@ -20,7 +20,7 @@ const getUser = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` })
     }
-};
+}
 
 const getUserFollowers = async (req, res) => {
     const { username } = req.params
