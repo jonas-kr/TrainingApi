@@ -43,7 +43,7 @@ const getSessions = async (req, res) => {
     try {
 
         const count = await Session.countDocuments({ user: userId });
-        if (count === 0) {
+        if (count == 0) {
             return res.status(200).json({ message: "There are no Sessions" });
         }
 
