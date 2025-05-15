@@ -1,0 +1,58 @@
+[
+    {
+        "username" : "yakerdev",
+        "email" : "yakerdev@gmail.com",
+        "password" : "kz752003kz",
+        "currentPassword" : "zebilhalouf",
+        "newPassword" : "2222222",
+        "value" : "kess omok",    
+      "program": 2001,
+      "title": "Upper Body Strength",
+      "description": "Focused on chest and back exercises with progressive overload.",
+      "imageUrl": "https://example.com/images/workout-upper-body.png",
+      "date": "2025-04-18T08:30:00.000Z",
+      "duration": "45 mins",
+      "likes": [1, 1],
+      "comments": [
+        {
+          "user": 1,
+          "value": "Great session, I felt this one!"
+        },
+        {
+          "user": 1,
+          "value": "Nice breakdown of sets, well done!"
+        }
+      ],
+      "performedExercises": [
+        {
+          "exercise": 23,
+          "sets": [
+            {
+              "typeOfSet": "warmup",
+              "weight": 40,
+              "reps": 10,
+              "oneRM": 53.33
+            },
+            {
+              "typeOfSet": "working",
+              "weight": 60,
+              "reps": 8,
+              "oneRM": 76
+            }
+          ]
+        },
+        {
+          "exercise": 3002,
+          "sets": [
+            {
+              "typeOfSet": "working",
+              "weight": 50,
+              "reps": 10,
+              "oneRM": 66.67
+            }
+          ]
+        }
+      ]
+    }
+    
+]
