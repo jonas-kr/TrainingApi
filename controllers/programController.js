@@ -51,6 +51,7 @@ const getTopRatedPrograms = async (req, res) => {
 
         if (!topPrograms) return res.status(404).json({ message: "No programs Found" })
         res.status(200).json(topPrograms);
+    
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` });
     }
