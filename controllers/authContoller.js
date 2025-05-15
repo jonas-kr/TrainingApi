@@ -143,16 +143,21 @@ const verifyUserResetCode = async (req, res) => {
 
 const resetPassword = async (req, res) => {
     const { newPassword, email, resetCode } = req.body;
+
+    if (!newPassword || !email || !resetCode) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
     try {
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        if (user.resetCode != resetCode) {
+        if (user.resetCode !== resetCode) {
             return res.status(500).json({ message: "Reset Code is wrong" });
         }
 
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
+        user.resetCode = null;
         await user.save();
 
         const { password, ...userWithNoPass } = user._doc
