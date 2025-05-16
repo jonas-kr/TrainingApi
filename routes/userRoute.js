@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { getUserStats } = require('../controllers/sessionController')
+const { getUserStats, getWeeklyUserStats } = require('../controllers/sessionController')
 const { getUser, followUnfollowUser, getPopularUsers, updateProfile, updatePassword,
     removeUser, addWeight, addExerciseRemoveExercise, getUserFollowers, getUserFollowing, addLibraryProgram,
     getUserLibraryPrograms, getUserSharedPrograms } = require('../controllers/userController')
@@ -10,6 +10,8 @@ const authMiddleware = require('../middlewares/authMiddleware')
 
 router.get('/suggested', authMiddleware, getPopularUsers) //get popular users
 router.get('/stats', getUserStats) //get stats users
+router.get('/weeklyStats', getWeeklyUserStats) //get stats users
+
 router.post('/addWeight', authMiddleware, addWeight) //add weight
 router.put('/update', authMiddleware, updateProfile) //update user profile
 router.put('/updatePassword', authMiddleware, updatePassword) //update user password
