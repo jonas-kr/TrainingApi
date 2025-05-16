@@ -402,7 +402,7 @@ const getWeeklyUserStats = async (req, res) => {
 
         if (allTime === "true" || allTime === true) {
             // Fetch earliest session to determine start date
-            const firstSession = await Session.findOne({ user: userId }).sort({ createdAt: 1 });
+            const firstSession = await Session.findOne({ user: userId }).sort({ createdAt: -1 });
             if (firstSession) {
                 startDate = new Date(firstSession.createdAt);
             }
@@ -467,7 +467,7 @@ const getWeeklyUserStats = async (req, res) => {
             };
         });
 
-        res.status(200).json({ weeklyStats });
+        res.status(200).json({ weeklyStats : weeklyStats.reverse() });
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` });
     }
