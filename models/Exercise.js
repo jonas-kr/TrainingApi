@@ -5,6 +5,9 @@ const ExerciseSchema = new mongoose.Schema({
     exerciseId: {
         type: Number
     },
+    apiId: {
+        type: Number
+    },
     exerciseName: {
         type: String,
     },

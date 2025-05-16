@@ -16,7 +16,7 @@ router.put("/comment/:sessionId", authMiddleware, addComment) //comment on a ses
 router.get("/likes/:sessionId", getSessionLikes) //get a session details
 router.get("/comments/:sessionId", getSessionComments) //get a session details
 
-router.get("/:sessionId", authMiddleware, getSessionDetails) //get a session details
+router.get("/:sessionId", getSessionDetails) //get a session details
 
 
 router.put("/:sessionId", authMiddleware, editSession) //edit a session

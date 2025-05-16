@@ -71,6 +71,12 @@ const getSessions = async (req, res) => {
         const sessions = await Session.find({ user: userId })
             .skip((page - 1) * limit)
             .limit(limit).populate({
+                path: 'performedExercises.exercise',
+                model: 'Exercise',
+                localField: 'exerciseId',
+                foreignField: 'exerciseId',
+                select: "primaryMuscle secondaryMuscles exerciseName exerciseId imageUrl"
+            }).populate({
                 path: 'user',
                 model: 'User',
                 localField: 'userId',

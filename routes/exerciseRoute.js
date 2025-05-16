@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { getExercises, addExercise, getExerciseById,getFavExercises } = require('../controllers/exerciseController')
+const { getExercises, addExercise, getExerciseById, getFavExercises } = require('../controllers/exerciseController')
 const Exercise = require("../models/Exercise")
 const authMiddleware = require('../middlewares/authMiddleware')
 
@@ -14,7 +14,7 @@ const options = {
     },
 };
 
-router.put("/updateImage", async (req, res) => {
+router.get("/updateImage", async (req, res) => {
     try {
         const response = await fetch(
             "https://exercisedb.p.rapidapi.com/exercises?limit=2000",
@@ -29,24 +29,25 @@ router.put("/updateImage", async (req, res) => {
 
 
         for (let index = 0; index < data.length; index++) {
-            const { gifUrl, name } = data[index];
+            const { id, gifUrl } = data[index];
+            const exercise = await Exercise.findOne({ apiId: parseInt(id) });
 
-            const exercise = await Exercise.findOne({ exerciseName: name });
+            if (!exercise) {
+                continue;
+            }
 
             exercise.imageUrl = gifUrl;
-
             await exercise.save();
-
         }
+
         res.json({ message: "Data updated succesfully" })
     } catch (error) {
         console.error("Error fetching exercises:", error);
     }
-
 })
 
 router.get('/', getExercises)
-router.get('/favorite',authMiddleware, getFavExercises)
+router.get('/favorite', authMiddleware, getFavExercises)
 
 router.post('/add', addExercise)
 
