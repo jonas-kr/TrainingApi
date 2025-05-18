@@ -76,7 +76,7 @@ const getExerciseHistory = async (req, res) => {
     try {
 
         const progress = await Progress.findOne(query).populate({
-            path: 'history',
+            path: 'history.sessionId',
             model: 'Session',
             localField: 'sessionId',
             foreignField: 'sessionId',

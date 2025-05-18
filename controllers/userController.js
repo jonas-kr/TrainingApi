@@ -127,6 +127,30 @@ const followUnfollowUser = async (req, res) => {
         res.status(500).json({ message: `Server error: ${error.message}` })
     }
 };
+const removeFollower = async (req, res) => {
+    const { userId } = req.params;
+    if (!userId) return res.status(400).json({ message: "No userId was provided" });
+    if (parseInt(userId) === req.user.userId) return res.status(400).json({ message: "You can't follow / unfollow yourself!" });
+
+    try {
+        const userToModify = await User.findOne({ userId });
+        const currentUser = req.user;
+        if (!userToModify) return res.status(404).json({ message: "User not found" });
+
+        const isFollowing = currentUser.following.includes(userId);
+        if (isFollowing) {
+            await User.updateOne({ userId }, { $pull: { following: currentUser.userId } });
+            await User.updateOne({ userId: currentUser.userId }, { $pull: { followers: userId } });
+
+            res.status(200).json({ message: "removed follower successfully", followed: false })
+        } else {
+            res.status(200).json({ message: "This user is not following you" })
+        }
+
+    } catch (error) {
+        res.status(500).json({ message: `Server error: ${error.message}` })
+    }
+};
 
 const getPopularUsers = async (req, res) => {
     try {
@@ -290,8 +314,31 @@ const addLibraryProgram = async (req, res) => {
     }
 }
 
+const getUsers = async (req, res) => {
+    const { username } = req.params;
+    if (!username) return res.status(400).json({ message: "No username was provided" });
+
+    try {
+        const query = {
+            username: { $regex: username, $options: 'i' } // case-insensitive search
+        };
+
+        const users = await User.find(query).select('-password');
+
+        if (!users || users.length === 0) {
+            return res.status(404).json({ message: "No users were found" });
+        }
+
+        res.status(200).json({ users });
+
+    } catch (error) {
+        res.status(500).json({ message: `Server error: ${error.message}` });
+    }
+};
+
 
 module.exports = {
     getUser, getUserFollowing, getUserFollowers, followUnfollowUser, getPopularUsers, addWeight, updateProfile,
-    updatePassword, removeUser, addExerciseRemoveExercise, getUserLibraryPrograms, addLibraryProgram, getUserSharedPrograms
+    updatePassword, removeUser, addExerciseRemoveExercise, getUserLibraryPrograms, addLibraryProgram,
+    getUserSharedPrograms, getUsers, removeFollower
 }

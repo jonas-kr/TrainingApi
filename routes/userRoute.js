@@ -2,11 +2,13 @@ const router = require('express').Router()
 const { getUserStats, getWeeklyUserStats } = require('../controllers/sessionController')
 const { getUser, followUnfollowUser, getPopularUsers, updateProfile, updatePassword,
     removeUser, addWeight, addExerciseRemoveExercise, getUserFollowers, getUserFollowing, addLibraryProgram,
-    getUserLibraryPrograms, getUserSharedPrograms } = require('../controllers/userController')
+    getUserLibraryPrograms, getUserSharedPrograms,getUsers,removeFollower } = require('../controllers/userController')
 const authMiddleware = require('../middlewares/authMiddleware')
 
 
 //route is /api/user
+
+router.get('/search/:username', getUsers)//get user profile
 
 router.get('/suggested', authMiddleware, getPopularUsers) //get popular users
 router.get('/stats', getUserStats) //get stats users
@@ -27,6 +29,7 @@ router.post('/library/:programId', authMiddleware, addLibraryProgram)//add a new
 router.get('/:userId', getUser)//get user profile
 
 router.post('/follow/:userId', authMiddleware, followUnfollowUser) //follow or unfollow
+router.post('/removeFollower/:userId', authMiddleware, removeFollower) //follow or unfollow
 router.post('/addRemoveExerciseToFavorites/:exerciseId', authMiddleware, addExerciseRemoveExercise) //add remove exercise to fav
 
 // top 10 most followed users
