@@ -1,17 +1,17 @@
 const router = require('express').Router()
 const authMiddleware = require('../middlewares/authMiddleware')
 const { getSessions, getHomeFeed, addSession, editSession, deleteSession,
-    likeUnlikeSession, addComment, getSessionDetails,getSessionLikes,getSessionComments } = require("../controllers/sessionController")
+    likeUnlikeSession, addComment, getSessionDetails, getSessionLikes, getSessionComments,
+    getComments } = require("../controllers/sessionController")
 
 
-    
+
 router.get("/", getSessions) //get user sessions
 
 router.get("/homeFeed", authMiddleware, getHomeFeed) //get user home Feed sessions
 router.post("/add", authMiddleware, addSession) //add a new session
 
 router.put("/like/:sessionId", authMiddleware, likeUnlikeSession) //like unlike a session
-router.get("/comment/:sessionId", authMiddleware, getcomments) //comment on a session
 router.put("/comment/:sessionId", authMiddleware, addComment) //comment on a session
 
 router.get("/likes/:sessionId", getSessionLikes) //get a session details

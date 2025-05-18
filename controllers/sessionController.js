@@ -296,36 +296,31 @@ const addComment = async (req, res) => {
 }
 
 const getComments = async (req, res) => {
-    const { value } = req.body
-    const userId = req.user.userId
-    const { sessionId } = req.params
+    const { sessionId } = req.params;
 
     try {
-        const session = await Session.findOne({ sessionId })
-        if (!session) return res.status(404).json({ message: "No session was found" });
-
-        await Session.updateOne({ sessionId }, { $push: { comments: { value, user: userId, date: new Date() } } });
-
-        await Notification.create({
-            type: "comment", from: req.user.userId, to: session.user,
-            session: sessionId
-        })
-
-        const newSession = await Session.findOne({ sessionId }).populate({
+        const session = await Session.findOne({ sessionId }).populate({
             path: 'comments.user',
             model: 'User',
-            localField: 'userId',
-            foreignField: 'userId',
-            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary -followers -following"
         }).exec();
 
-        res.status(200).json({ message: "Comment added successfully", comments: newSession.comments })
+        if (!session) {
+            return res.status(404).json({ message: "Session not found" });
+        }
+        if (session.comments.length == 0) {
+            return res.status(404).json({ message: "no comments found" });
+        }
+        // Sort comments by date (descending)
+        const sortedComments = session.comments.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        res.status(200).json({ message: "Comments fetched successfully", comments: sortedComments });
 
     } catch (error) {
-        res.status(500).json({ message: `Server error: ${error.message}` })
+        res.status(500).json({ message: `Server error: ${error.message}` });
     }
-
 }
+
 
 const getSessionDetails = async (req, res) => {
     const { sessionId } = req.params
@@ -385,13 +380,15 @@ const getSessionComments = async (req, res) => {
             model: 'User',
             localField: 'userId',
             foreignField: 'userId',
-            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following -resetCode"
         }).exec();
 
         if (!session) return res.status(404).json({ message: "Session not found" })
 
+        const sortedComments = session.comments.sort((a, b) => new Date(b.date) - new Date(a.date));
+
         //stats
-        res.status(200).json({ comments: session.comments })
+        res.status(200).json({ comments: sortedComments })
 
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` })
@@ -530,5 +527,5 @@ const getWeeklyUserStats = async (req, res) => {
 
 module.exports = {
     getSessions, getHomeFeed, addSession, editSession, deleteSession, likeUnlikeSession,
-    addComment, getSessionDetails, getUserStats, getSessionLikes, getSessionComments, getWeeklyUserStats
+    addComment, getSessionDetails, getUserStats, getSessionLikes, getSessionComments, getWeeklyUserStats, getComments
 }
