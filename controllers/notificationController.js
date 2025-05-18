@@ -53,8 +53,16 @@ const readNotification = async (req, res) => {
 
 
         await notification.save();
+        
+        const updatedNotification = await Notification.findOne({ notificationId }).populate({
+            path: 'from',
+            model: 'User',
+            localField: 'userId',
+            foreignField: 'userId',
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following -createdAt -email -updatedAt -resetCode"
+        }).exec();
 
-        res.json({ message: "notification updated successfully", notification });
+        res.json({ message: "notification updated successfully", notification: updatedNotification });
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` })
     }
@@ -65,7 +73,13 @@ const deleteNotification = async (req, res) => {
     const userId = req.user.userId
 
     try {
-        const notification = await Notification.findOne({ notificationId });
+        const notification = await Notification.findOne({ notificationId }).populate({
+            path: 'from',
+            model: 'User',
+            localField: 'userId',
+            foreignField: 'userId',
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following -createdAt -email -updatedAt -resetCode"
+        }).exec();
 
         if (notification.to !== userId) return res.status(400).json({ message: "you can't delete this notification" })
 
