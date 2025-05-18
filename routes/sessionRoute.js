@@ -20,7 +20,7 @@ router.get("/:sessionId", getSessionDetails) //get a session details
 
 
 router.put("/:sessionId", authMiddleware, editSession) //edit a session
-router.delete("/sessionId", authMiddleware, deleteSession) //delete a session
+router.delete("/:sessionId", authMiddleware, deleteSession) //delete a session
 
 
 

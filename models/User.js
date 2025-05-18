@@ -20,7 +20,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
     },
     bio: { type: String },
-    birthDate: { type: Date },
+    birthdate: { type: Date },
     gender: { type: Boolean },
     height: { type: String },
     resetCode: { type: Number },

@@ -96,7 +96,22 @@ const updateProgram = async (req, res) => {
 
         await program.save();
 
-        res.json({ message: "User updated program successfully", program });
+        const updatedProgram = await Program.findOne({ programId })
+        .populate({
+            path: 'createdBy',
+            model: 'User',
+            localField: 'userId',
+            foreignField: 'userId',
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+        }).populate({
+            path: 'workouts.exercises.exercise',
+            model: 'Exercise',
+            localField: 'exerciseId',
+            foreignField: 'exerciseId',
+            select: "-_id -__v -instructions"
+        }).exec();
+
+        res.json({ message: "User updated program successfully", program: updatedProgram });
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` });
     }
@@ -119,6 +134,20 @@ const addWorkout = async (req, res) => {
             { programId },
             { $push: { workouts: workout } }
         );
+
+        program.populate({
+            path: 'createdBy',
+            model: 'User',
+            localField: 'userId',
+            foreignField: 'userId',
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+        }).populate({
+            path: 'workouts.exercises.exercise',
+            model: 'Exercise',
+            localField: 'exerciseId',
+            foreignField: 'exerciseId',
+            select: "-_id -__v -instructions"
+        }).exec();
 
         res.json({ message: "User add workout successfully", program });
     } catch (error) {
@@ -145,6 +174,21 @@ const updateWorkout = async (req, res) => {
         if (workout && index >= 0 && index < program.workouts.length) {
             program.workouts[index] = workout;
             await program.save();
+
+            program.populate({
+                path: 'createdBy',
+                model: 'User',
+                localField: 'userId',
+                foreignField: 'userId',
+                select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+            }).populate({
+                path: 'workouts.exercises.exercise',
+                model: 'Exercise',
+                localField: 'exerciseId',
+                foreignField: 'exerciseId',
+                select: "-_id -__v -instructions"
+            }).exec();
+
             return res.json({ message: "Workout updated successfully", program });
         } else {
             return res.status(400).json({ message: "Invalid workout index" });
@@ -210,6 +254,7 @@ const rateProgram = async (req, res) => {
     const { programId } = req.params
 
     try {
+        await Program.updateOne({ programId },{ $pull: { ratings: { user: userId } } });
         await Program.updateOne({ programId }, { $push: { ratings: { value, user: userId } } });
 
         res.status(200).json({ message: "Rating added successfully" })

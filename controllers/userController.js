@@ -6,10 +6,10 @@ const Progress = require('../models/Progress')
 const Notification = require("../models/Notification")
 
 const getUser = async (req, res) => {
-    const { username } = req.params
-    if (!username) return res.status(400).json({ message: "No username was provided" });
+    const { userId } = req.params
+    if (!userId) return res.status(400).json({ message: "No username was provided" });
     try {
-        const user = await User.findOne({ username })
+        const user = await User.findOne({ userId })
 
         if (!user) return res.status(404).json({ message: "User not found" })
 
@@ -23,10 +23,10 @@ const getUser = async (req, res) => {
 }
 
 const getUserFollowers = async (req, res) => {
-    const { username } = req.params
-    if (!username) return res.status(400).json({ message: "No username was provided" });
+    const { userId } = req.params
+    if (!userId) return res.status(400).json({ message: "No userId was provided" });
     try {
-        const user = await User.findOne({ username }).populate({
+        const user = await User.findOne({ userId }).populate({
             path: 'followers',
             model: 'User',
             localField: 'userId',
@@ -44,10 +44,10 @@ const getUserFollowers = async (req, res) => {
 };
 
 const getUserFollowing = async (req, res) => {
-    const { username } = req.params
-    if (!username) return res.status(400).json({ message: "No username was provided" });
+    const { userId } = req.params
+    if (!userId) return res.status(400).json({ message: "No userId was provided" });
     try {
-        const user = await User.findOne({ username }).populate({
+        const user = await User.findOne({ userId }).populate({
             path: 'following',
             model: 'User',
             localField: 'userId',
@@ -113,14 +113,14 @@ const followUnfollowUser = async (req, res) => {
 
             await Notification.deleteOne({ type: "follow", from: req.user.userId, to: userId })
 
-            res.status(200).json({ message: "User unfollowed successfully" })
+            res.status(200).json({ message: "User unfollowed successfully", followed: false })
         } else { //follow
             await User.updateOne({ userId }, { $push: { followers: currentUser.userId } });
             await User.updateOne({ userId: currentUser.userId }, { $push: { following: userId } });
             //send Notification to user
             await Notification.create({ type: "follow", from: req.user.userId, to: userId })
 
-            res.status(200).json({ message: "User followed successfully" })
+            res.status(200).json({ message: "User followed successfully", followed: true })
         }
 
     } catch (error) {
@@ -174,22 +174,18 @@ const addWeight = async (req, res) => {
 }
 
 const updateProfile = async (req, res) => {
-    const { email, username, birthdate, gender, height, bio, imgUrl } = req.body;
+    const { email, username, birthdate, gender, height, bio, profilePic } = req.body;
     const userId = req.user.userId;
 
     try {
         const user = await User.findOne({ userId });
 
         if (email) user.email = email;
-        if (username) {
-            const isAvailable = await User.findOne({ username })
-            if (isAvailable) return res.status(409).json({ message: "Username is already taken" })
-            user.username = username
-        }
+        if (username) user.username = username
         if (birthdate) user.birthdate = birthdate;
         if (bio) user.bio = bio;
         if (height) user.height = height;
-        if (imgUrl) user.imgUrl = imgUrl;
+        if (profilePic) user.profilePic = profilePic;
         user.gender = gender;
 
         await user.save();
@@ -255,11 +251,11 @@ const addExerciseRemoveExercise = async (req, res) => {
         if (isFavorite) {//remove
             await User.updateOne({ userId }, { $pull: { favoriteExercises: exerciseId } });
 
-            res.status(200).json({ message: "User remove exercise from favorite successfully" })
+            res.status(200).json({ message: "User remove exercise from favorite successfully", favorite: false })
         } else { //Add
             await User.updateOne({ userId }, { $push: { favoriteExercises: exerciseId } });
 
-            res.status(200).json({ message: "User Add exercise to favorite successfully" })
+            res.status(200).json({ message: "User Add exercise to favorite successfully", favorite: true })
         }
 
     } catch (error) {
@@ -274,16 +270,17 @@ const addLibraryProgram = async (req, res) => {
     if (!programId) return res.status(404).json({ message: "No programID was provided" })
 
     try {
-        const program = Program.findOne({ programId });
+        const program = await Program.findOne({ programId });
         if (!program) return res.status(404).json({ message: "No program with this ID" })
 
         const libraryProgram = await Program.create({
             name: program.name, description: program.description, level: program.level,
-            goal: program.goals, daysPerWeek: program.daysPerWeek, isPrivate: program.isPrivate,
+            goal: program.goal, daysPerWeek: program.daysPerWeek, isPrivate: true,
+            workouts: program.workouts, imageUrl: program.imageUrl,
             createdBy: program.createdBy, savedBy: userId
         })
         await Notification.create({
-            type: "save", from: req.user.userId, to: program.savedBy,
+            type: "save", from: req.user.userId, to: program.createdBy,
             program: programId
         })
 

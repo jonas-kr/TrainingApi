@@ -1,4 +1,5 @@
 const Session = require("../models/Session")
+const Notification = require("../models/Notification");
 const { calcHeatmap } = require("../utils/calcHeatmap");
 const { addExerciseProgress } = require("./progressController");
 
@@ -66,13 +67,22 @@ const getHomeFeed = async (req, res) => {
         const sessions = await Session.find({
             user: { $in: allUserIds }
         })
+            .sort({ date: -1})
             .skip((page - 1) * limit)
-            .limit(limit).populate({
+            .limit(limit)
+            .populate({
                 path: 'user',
                 model: 'User',
                 localField: 'userId',
                 foreignField: 'userId',
                 select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+            })
+            .populate({
+                path: 'performedExercises.exercise',
+                model: 'Exercise',
+                localField: 'exerciseId',
+                foreignField: 'exerciseId',
+                select: "primaryMuscle secondaryMuscles exerciseName exerciseId imageUrl"
             }).exec();
 
         return res.status(200).json({
@@ -99,19 +109,22 @@ const getSessions = async (req, res) => {
         }
 
         const sessions = await Session.find({ user: userId })
+            .sort({ date: -1})
             .skip((page - 1) * limit)
-            .limit(limit).populate({
-                path: 'performedExercises.exercise',
-                model: 'Exercise',
-                localField: 'exerciseId',
-                foreignField: 'exerciseId',
-                select: "primaryMuscle secondaryMuscles exerciseName exerciseId imageUrl"
-            }).populate({
+            .limit(limit)
+            .populate({
                 path: 'user',
                 model: 'User',
                 localField: 'userId',
                 foreignField: 'userId',
                 select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+            })
+            .populate({
+                path: 'performedExercises.exercise',
+                model: 'Exercise',
+                localField: 'exerciseId',
+                foreignField: 'exerciseId',
+                select: "primaryMuscle secondaryMuscles exerciseName exerciseId imageUrl"
             }).exec();
 
         return res.status(200).json({
@@ -173,7 +186,7 @@ const addSession = async (req, res) => {
 }
 
 const editSession = async (req, res) => {
-    const { program, title, description, imageUrl, date, duration, performedExercises } = req.body
+    const { program, title, description, imageUrl, date, duration } = req.body
     const { sessionId } = req.params
     const userId = req.user.userId
 
@@ -188,10 +201,9 @@ const editSession = async (req, res) => {
         if (imageUrl) session.imageUrl = imageUrl;
         if (date) session.date = date;
         if (duration) session.duration = duration;
-        if (performedExercises) session.performedExercises = performedExercises;
 
 
-        await program.save();
+        await session.save();
 
         res.json({ message: "User updated session successfully", session });
     } catch (error) {
@@ -209,7 +221,7 @@ const deleteSession = async (req, res) => {
 
         if (session.user !== userId) return res.status(400).json({ message: "you can't delete this Session" })
 
-        await User.deleteOne({ sessionId });
+        await Session.deleteOne({ sessionId });
 
         res.status(200).json({ message: "Session deleted successfully" });
 
@@ -235,7 +247,7 @@ const likeUnlikeSession = async (req, res) => {
                 session: sessionId
             })
 
-            res.status(200).json({ message: "User disliked session successfully" })
+            res.status(200).json({ message: "User disliked session successfully", liked: false })
         } else { //like
             await Session.updateOne({ sessionId }, { $push: { likes: userId } });
             await Notification.create({
@@ -243,7 +255,7 @@ const likeUnlikeSession = async (req, res) => {
                 session: sessionId
             })
 
-            res.status(200).json({ message: "User liked session successfully" })
+            res.status(200).json({ message: "User liked session successfully", liked: true })
         }
 
     } catch (error) {
@@ -267,7 +279,15 @@ const addComment = async (req, res) => {
             session: sessionId
         })
 
-        res.status(200).json({ message: "Comment added successfully" })
+        const newSession = await Session.findOne({ sessionId }).populate({
+            path: 'comments.user',
+            model: 'User',
+            localField: 'userId',
+            foreignField: 'userId',
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+        }).exec();
+
+        res.status(200).json({ message: "Comment added successfully", comments: newSession.comments })
 
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` })
@@ -312,13 +332,13 @@ const getSessionLikes = async (req, res) => {
             model: 'User',
             localField: 'userId',
             foreignField: 'userId',
-            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary -following"
         }).exec();
 
         if (!session) return res.status(404).json({ message: "Session not found" })
 
         //stats
-        res.status(200).json({ Likes: session.likes })
+        res.status(200).json({ likes: session.likes })
 
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` })
@@ -329,7 +349,7 @@ const getSessionComments = async (req, res) => {
     if (!sessionId) return res.status(400).json({ message: "No Id was provided" });
     try {
         const session = await Session.findOne({ sessionId }).populate({
-            path: 'likes',
+            path: 'comments.user',
             model: 'User',
             localField: 'userId',
             foreignField: 'userId',
@@ -339,7 +359,7 @@ const getSessionComments = async (req, res) => {
         if (!session) return res.status(404).json({ message: "Session not found" })
 
         //stats
-        res.status(200).json({ Likes: session.likes })
+        res.status(200).json({ comments: session.comments })
 
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` })
@@ -394,7 +414,7 @@ const getUserStats = async (req, res) => {
 };
 
 const getWeeklyUserStats = async (req, res) => {
-    const { allTime = false, nbrWeeks = 3, userId } = req.query;
+    const { allTime = false, nbrWeeks = 4, userId } = req.query;
 
     try {
         let startDate = new Date();
@@ -402,7 +422,7 @@ const getWeeklyUserStats = async (req, res) => {
 
         if (allTime === "true" || allTime === true) {
             // Fetch earliest session to determine start date
-            const firstSession = await Session.findOne({ user: userId }).sort({ createdAt: -1 });
+            const firstSession = await Session.findOne({ user: userId }).sort({ date: 1 });
             if (firstSession) {
                 startDate = new Date(firstSession.createdAt);
             }
@@ -467,7 +487,7 @@ const getWeeklyUserStats = async (req, res) => {
             };
         });
 
-        res.status(200).json({ weeklyStats : weeklyStats.reverse() });
+        res.status(200).json({ weeklyStats });
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` });
     }

@@ -18,13 +18,13 @@ router.put('/updatePassword', authMiddleware, updatePassword) //update user pass
 router.delete('/remove', authMiddleware, removeUser) //delete user account
 
 router.get('/library', authMiddleware, getUserLibraryPrograms)//get user library programs
-router.get('/sharedPrograms', authMiddleware, getUserSharedPrograms)//get user Shared programs
+router.get('/sharedPrograms/:userId', getUserSharedPrograms)//get user Shared programs
 
-router.get('/followers/:username', getUserFollowers)//get user followers
-router.get('/following/:username', getUserFollowing)//get user following
+router.get('/followers/:userId', getUserFollowers)//get user followers
+router.get('/following/:userId', getUserFollowing)//get user following
 router.post('/library/:programId', authMiddleware, addLibraryProgram)//add a new library program
 
-router.get('/:username', getUser)//get user profile
+router.get('/:userId', getUser)//get user profile
 
 router.post('/follow/:userId', authMiddleware, followUnfollowUser) //follow or unfollow
 router.post('/addRemoveExerciseToFavorites/:exerciseId', authMiddleware, addExerciseRemoveExercise) //add remove exercise to fav
