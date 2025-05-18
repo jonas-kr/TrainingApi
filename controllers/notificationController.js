@@ -18,7 +18,13 @@ const getNotifications = async (req, res) => {
         const notifications = await Notification.find(query)
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
-            .limit(Number(limit));
+            .limit(Number(limit)).populate({
+                path: 'from',
+                model: 'User',
+                localField: 'userId',
+                foreignField: 'userId',
+                select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following -createdAt -email -updatedAt -resetCode"
+            }).exec();
 
         return res.status(200).json({
             notifications,

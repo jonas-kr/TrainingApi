@@ -250,10 +250,13 @@ const likeUnlikeSession = async (req, res) => {
             res.status(200).json({ message: "User disliked session successfully", liked: false })
         } else { //like
             await Session.updateOne({ sessionId }, { $push: { likes: userId } });
-            await Notification.create({
-                type: "like", from: req.user.userId, to: session.user,
-                session: sessionId
-            })
+            if (req.user.userId != session.user) {
+
+                await Notification.create({
+                    type: "like", from: req.user.userId, to: session.user,
+                    session: sessionId
+                })
+            }
 
             res.status(200).json({ message: "User liked session successfully", liked: true })
         }
@@ -274,10 +277,14 @@ const addComment = async (req, res) => {
 
         await Session.updateOne({ sessionId }, { $push: { comments: { value, user: userId, date: new Date() } } });
 
-        await Notification.create({
-            type: "comment", from: req.user.userId, to: session.user,
-            session: sessionId
-        })
+        if (req.user.userId == session.user) return
+        if (req.user.userId != session.user) {
+
+            await Notification.create({
+                type: "comment", from: req.user.userId, to: session.user,
+                context: sessionId
+            })
+        }
 
         const newSession = await Session.findOne({ sessionId }).populate({
             path: 'comments.user',

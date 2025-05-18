@@ -305,7 +305,7 @@ const addLibraryProgram = async (req, res) => {
         })
         await Notification.create({
             type: "save", from: req.user.userId, to: program.createdBy,
-            program: programId
+            context: programId
         })
 
         res.status(201).json({ message: "Program succesfully created", libraryProgram })

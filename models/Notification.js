@@ -25,13 +25,8 @@ const notificationSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    session: {
+    context: {
         type: Number,
-        ref: "Session",
-    },
-    program: {
-        type: Number,
-        ref: "Program",
     },
 
 }, { timestamps: true })
