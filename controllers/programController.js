@@ -135,7 +135,7 @@ const addWorkout = async (req, res) => {
             { $push: { workouts: workout } }
         );
 
-        program.populate({
+         const updatedProgram = await Program.findOne({ programId }).populate({
             path: 'createdBy',
             model: 'User',
             localField: 'userId',
@@ -149,7 +149,7 @@ const addWorkout = async (req, res) => {
             select: "-_id -__v -instructions"
         }).exec();
 
-        res.json({ message: "User add workout successfully", program });
+        res.json({ message: "User add workout successfully", program :updatedProgram });
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` });
     }
@@ -175,7 +175,7 @@ const updateWorkout = async (req, res) => {
             program.workouts[index] = workout;
             await program.save();
 
-            program.populate({
+            const updatedProgram = await Program.findOne({ programId }).populate({
                 path: 'createdBy',
                 model: 'User',
                 localField: 'userId',
@@ -189,7 +189,7 @@ const updateWorkout = async (req, res) => {
                 select: "-_id -__v -instructions"
             }).exec();
 
-            return res.json({ message: "Workout updated successfully", program });
+            return res.json({ message: "Workout updated successfully", program : updatedProgram });
         } else {
             return res.status(400).json({ message: "Invalid workout index" });
         }
