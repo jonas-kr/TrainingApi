@@ -137,7 +137,7 @@ const removeFollower = async (req, res) => {
         const currentUser = req.user;
         if (!userToModify) return res.status(404).json({ message: "User not found" });
 
-        const isFollowing = currentUser.following.includes(userId);
+        const isFollowing = currentUser.followers.includes(userId);
         if (isFollowing) {
             await User.updateOne({ userId }, { $pull: { following: currentUser.userId } });
             await User.updateOne({ userId: currentUser.userId }, { $pull: { followers: userId } });

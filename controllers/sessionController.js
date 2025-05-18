@@ -67,7 +67,7 @@ const getHomeFeed = async (req, res) => {
         const sessions = await Session.find({
             user: { $in: allUserIds }
         })
-            .sort({ date: -1})
+            .sort({ date: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
             .populate({
@@ -109,7 +109,7 @@ const getSessions = async (req, res) => {
         }
 
         const sessions = await Session.find({ user: userId })
-            .sort({ date: -1})
+            .sort({ date: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
             .populate({
@@ -169,7 +169,7 @@ const addSession = async (req, res) => {
 
 
             addExerciseProgress({
-                userId, sessionId: session.sessionId,sets, exerciseId: exercise, heaviestWeight,
+                userId, sessionId: session.sessionId, sets, exerciseId: exercise, heaviestWeight,
                 bestOneRM, bestSetVolume, bestSessionVolume: totalVolume, totalReps, totalVolume
             })
 
@@ -272,7 +272,39 @@ const addComment = async (req, res) => {
         const session = await Session.findOne({ sessionId })
         if (!session) return res.status(404).json({ message: "No session was found" });
 
-        await Session.updateOne({ sessionId }, { $push: { comments: { value, user: userId } } });
+        await Session.updateOne({ sessionId }, { $push: { comments: { value, user: userId, date: new Date() } } });
+
+        await Notification.create({
+            type: "comment", from: req.user.userId, to: session.user,
+            session: sessionId
+        })
+
+        const newSession = await Session.findOne({ sessionId }).populate({
+            path: 'comments.user',
+            model: 'User',
+            localField: 'userId',
+            foreignField: 'userId',
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+        }).exec();
+
+        res.status(200).json({ message: "Comment added successfully", comments: newSession.comments })
+
+    } catch (error) {
+        res.status(500).json({ message: `Server error: ${error.message}` })
+    }
+
+}
+
+const getComments = async (req, res) => {
+    const { value } = req.body
+    const userId = req.user.userId
+    const { sessionId } = req.params
+
+    try {
+        const session = await Session.findOne({ sessionId })
+        if (!session) return res.status(404).json({ message: "No session was found" });
+
+        await Session.updateOne({ sessionId }, { $push: { comments: { value, user: userId, date: new Date() } } });
 
         await Notification.create({
             type: "comment", from: req.user.userId, to: session.user,

@@ -31,7 +31,8 @@ const SessionSchema = new mongoose.Schema({
     likes: [{ type: Number, ref: "User" }],
     comments: [{
         user: { type: Number, ref: "User" },
-        value: { type: String }
+        value: { type: String },
+        date: { type: Date }
     }],
     performedExercises: [{
         exercise: { type: Number, ref: "Exercise" },

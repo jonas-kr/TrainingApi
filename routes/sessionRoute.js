@@ -11,6 +11,7 @@ router.get("/homeFeed", authMiddleware, getHomeFeed) //get user home Feed sessio
 router.post("/add", authMiddleware, addSession) //add a new session
 
 router.put("/like/:sessionId", authMiddleware, likeUnlikeSession) //like unlike a session
+router.get("/comment/:sessionId", authMiddleware, getcomments) //comment on a session
 router.put("/comment/:sessionId", authMiddleware, addComment) //comment on a session
 
 router.get("/likes/:sessionId", getSessionLikes) //get a session details
