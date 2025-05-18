@@ -9,7 +9,16 @@ const ProgressSchema = new mongoose.Schema({
         type: Number, ref: "User"
     },
     exercise: { type: Number, ref: "Exercise" },
-    history: [{ type: Number, ref: "Session" }],
+    history: [{ 
+        sessionId : {type: Number, ref: "Session"}, 
+        sets: [{
+            typeOfSet: { type: String },
+            weight: { type: Number },
+            reps: { type: Number },
+            oneRM: { type: Number },
+        }    // 1rm = weight * (1 + (reps/30) ) } 
+        ]
+    }],
     heaviestWeight: {
         value: { type: Number },
         workout: { type: Number, ref: "Session" }

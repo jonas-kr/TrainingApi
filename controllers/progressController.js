@@ -24,7 +24,7 @@ const getProgress = async (req, res) => {
     }
 }
 
-const addExerciseProgress = async ({ userId, sessionId, exerciseId, heaviestWeight, bestOneRM, bestSetVolume,
+const addExerciseProgress = async ({ userId, sessionId, sets, exerciseId, heaviestWeight, bestOneRM, bestSetVolume,
     bestSessionVolume, totalReps, totalVolume }) => {
 
     const query = {};
@@ -37,7 +37,7 @@ const addExerciseProgress = async ({ userId, sessionId, exerciseId, heaviestWeig
         if (!progress) {
 
             await Progress.create({
-                user: userId, exercise: exerciseId, history: [sessionId],
+                user: userId, exercise: exerciseId, history: [{sessionId, sets}],
                 heaviestWeight: { value: heaviestWeight, workout: sessionId },
                 bestOneRM: { value: bestOneRM, workout: sessionId },
                 bestSetVolume: { value: bestSetVolume, workout: sessionId },

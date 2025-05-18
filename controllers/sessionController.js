@@ -169,7 +169,7 @@ const addSession = async (req, res) => {
 
 
             addExerciseProgress({
-                userId, sessionId: session.sessionId, exerciseId: exercise, heaviestWeight,
+                userId, sessionId: session.sessionId,sets, exerciseId: exercise, heaviestWeight,
                 bestOneRM, bestSetVolume, bestSessionVolume: totalVolume, totalReps, totalVolume
             })
 
