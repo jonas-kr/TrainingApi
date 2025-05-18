@@ -97,19 +97,19 @@ const updateProgram = async (req, res) => {
         await program.save();
 
         const updatedProgram = await Program.findOne({ programId })
-        .populate({
-            path: 'createdBy',
-            model: 'User',
-            localField: 'userId',
-            foreignField: 'userId',
-            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
-        }).populate({
-            path: 'workouts.exercises.exercise',
-            model: 'Exercise',
-            localField: 'exerciseId',
-            foreignField: 'exerciseId',
-            select: "-_id -__v -instructions"
-        }).exec();
+            .populate({
+                path: 'createdBy',
+                model: 'User',
+                localField: 'userId',
+                foreignField: 'userId',
+                select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+            }).populate({
+                path: 'workouts.exercises.exercise',
+                model: 'Exercise',
+                localField: 'exerciseId',
+                foreignField: 'exerciseId',
+                select: "-_id -__v -instructions"
+            }).exec();
 
         res.json({ message: "User updated program successfully", program: updatedProgram });
     } catch (error) {
@@ -135,7 +135,7 @@ const addWorkout = async (req, res) => {
             { $push: { workouts: workout } }
         );
 
-         const updatedProgram = await Program.findOne({ programId }).populate({
+        const updatedProgram = await Program.findOne({ programId }).populate({
             path: 'createdBy',
             model: 'User',
             localField: 'userId',
@@ -149,7 +149,7 @@ const addWorkout = async (req, res) => {
             select: "-_id -__v -instructions"
         }).exec();
 
-        res.json({ message: "User add workout successfully", program :updatedProgram });
+        res.json({ message: "User add workout successfully", program: updatedProgram });
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` });
     }
@@ -189,7 +189,7 @@ const updateWorkout = async (req, res) => {
                 select: "-_id -__v -instructions"
             }).exec();
 
-            return res.json({ message: "Workout updated successfully", program : updatedProgram });
+            return res.json({ message: "Workout updated successfully", program: updatedProgram });
         } else {
             return res.status(400).json({ message: "Invalid workout index" });
         }
@@ -222,7 +222,22 @@ const deleteWorkout = async (req, res) => {
         program.workouts.splice(index, 1);
         await program.save();
 
-        res.json({ message: "Workout deleted successfully", program });
+        const updatedProgram = await Program.findOne({ programId }).populate({
+            path: 'createdBy',
+            model: 'User',
+            localField: 'userId',
+            foreignField: 'userId',
+            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following"
+        }).populate({
+            path: 'workouts.exercises.exercise',
+            model: 'Exercise',
+            localField: 'exerciseId',
+            foreignField: 'exerciseId',
+            select: "-_id -__v -instructions"
+        }).exec();
+
+
+        res.json({ message: "Workout deleted successfully", program: updatedProgram });
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` });
     }
@@ -254,7 +269,7 @@ const rateProgram = async (req, res) => {
     const { programId } = req.params
 
     try {
-        await Program.updateOne({ programId },{ $pull: { ratings: { user: userId } } });
+        await Program.updateOne({ programId }, { $pull: { ratings: { user: userId } } });
         await Program.updateOne({ programId }, { $push: { ratings: { value, user: userId } } });
 
         res.status(200).json({ message: "Rating added successfully" })

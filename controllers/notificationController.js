@@ -61,7 +61,7 @@ const deleteNotification = async (req, res) => {
     try {
         const notification = await Notification.findOne({ notificationId });
 
-        if (notification.to !== userId) return res.status(400).json({ message: "you can't update this notification" })
+        if (notification.to !== userId) return res.status(400).json({ message: "you can't delete this notification" })
 
         await Notification.deleteOne({ notificationId });
 
