@@ -23,6 +23,25 @@ const getProgress = async (req, res) => {
         res.status(500).json({ message: `Server error: ${error.message}` });
     }
 }
+const getAllProgresses = async (req, res) => {
+    const userId = req.user.userId;
+
+    const query = {};
+    query.user = userId;
+
+    try {
+
+        const progresses = await Progress.find(query);
+        if (!progresses) {
+            return res.status(200).json({ message: "There is no progresses" });
+        }
+
+        return res.status(200).json({ progresses });
+
+    } catch (error) {
+        res.status(500).json({ message: `Server error: ${error.message}` });
+    }
+}
 
 const addExerciseProgress = async ({ userId, sessionId, sets, exerciseId, heaviestWeight, bestOneRM, bestSetVolume,
     bestSessionVolume, totalReps, totalVolume }) => {
@@ -101,4 +120,4 @@ const getExerciseHistory = async (req, res) => {
 
 
 
-module.exports = { getProgress, addExerciseProgress, getExerciseHistory }
+module.exports = { getProgress, addExerciseProgress, getExerciseHistory,getAllProgresses }
