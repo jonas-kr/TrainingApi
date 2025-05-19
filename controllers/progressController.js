@@ -63,6 +63,7 @@ const addExerciseProgress = async ({ userId, sessionId, sets, exerciseId, heavie
     }
 }
 
+
 const getExerciseHistory = async (req, res) => {
     const { exerciseId } = req.params
     const userId = req.user.userId;
