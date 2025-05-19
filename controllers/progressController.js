@@ -31,7 +31,13 @@ const getAllProgresses = async (req, res) => {
 
     try {
 
-        const progresses = await Progress.find(query);
+        const progresses = await Progress.find(query).populate({
+            path: 'exercise',
+            model: 'Exercise',
+            localField: 'exerciseId',
+            foreignField: 'exerciseId',
+            select: "exerciseName exerciseId imageUrl"
+        }).exec();
         if (!progresses) {
             return res.status(200).json({ message: "There is no progresses" });
         }
