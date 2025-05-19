@@ -302,6 +302,7 @@ const addComment = async (req, res) => {
 
 }
 
+
 const getComments = async (req, res) => {
     const { sessionId } = req.params;
 
@@ -357,6 +358,7 @@ const getSessionDetails = async (req, res) => {
     }
 }
 
+
 const getWeeklyHeatmap = async (req, res) => {
     const { userId } = req.params;
     if (!userId) return res.status(400).json({ message: "No user ID provided" });
@@ -365,7 +367,7 @@ const getWeeklyHeatmap = async (req, res) => {
         // Week range: Saturday to Friday
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const dayOfWeek = today.getDay(); 
+        const dayOfWeek = today.getDay();
         const daysSinceSaturday = (dayOfWeek + 1) % 7;
         const startOfWeek = new Date(today);
         startOfWeek.setDate(today.getDate() - daysSinceSaturday);

@@ -2,17 +2,37 @@ const Exercise = require("../models/Exercise")
 
 
 const getExercises = async (req, res) => {
-    const { page = 1, limit = 10, exerciseName, targetMuscle, equipment } = req.query;
-
-    console.log('exercise:', exerciseName);
+    const {
+        page = 1,
+        limit = 10,
+        exerciseName,
+        targetMuscle,
+        equipment,
+        other
+    } = req.query;
 
     const query = {};
-    if (exerciseName) query.exerciseName = { $regex: exerciseName, $options: 'i' }; // case-insensitive search
-    if (targetMuscle) query.primaryMuscle = targetMuscle;
-    if (equipment) query.equipment = equipment;
+    const knownEquipmentKeywords = ["barbell", "body weight", "cable", "dumbbell", "machine"];
+
+    if (exerciseName) {
+        query.exerciseName = { $regex: exerciseName, $options: 'i' };
+    }
+
+    if (targetMuscle) {
+        query.primaryMuscle = targetMuscle;
+    }
+
+    if (other === 'true') {
+        // Exclude equipment containing any of the known keywords (partial, case-insensitive match)
+        query.$nor = knownEquipmentKeywords.map(keyword => ({
+            equipment: { $regex: keyword, $options: 'i' }
+        }));
+    } else if (equipment) {
+        // Case-insensitive partial match
+        query.equipment = { $regex: equipment, $options: 'i' };
+    }
 
     try {
-
         const count = await Exercise.countDocuments(query);
         if (count === 0) {
             return res.status(200).json({ message: "There are no exercises" });
@@ -20,12 +40,12 @@ const getExercises = async (req, res) => {
 
         const exercises = await Exercise.find(query)
             .skip((page - 1) * limit)
-            .limit(limit);
+            .limit(Number(limit));
 
         return res.status(200).json({
             exercises,
             totalPages: Math.ceil(count / limit),
-            currentPage: page,
+            currentPage: Number(page),
             count
         });
 
@@ -33,6 +53,9 @@ const getExercises = async (req, res) => {
         res.status(500).json({ message: `Server error: ${error.message}` });
     }
 };
+
+
+
 
 const getExerciseById = async (req, res) => {
     const { exerciseId } = req.params
