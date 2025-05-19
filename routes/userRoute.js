@@ -2,7 +2,7 @@ const router = require('express').Router()
 const { getUserStats, getWeeklyUserStats } = require('../controllers/sessionController')
 const { getUser, followUnfollowUser, getPopularUsers, updateProfile, updatePassword,
     removeUser, addWeight, addExerciseRemoveExercise, getUserFollowers, getUserFollowing, addLibraryProgram,
-    getUserLibraryPrograms, getUserSharedPrograms, getUsers, removeFollower } = require('../controllers/userController')
+    getUserLibraryPrograms, getUserSharedPrograms, getUsers, removeFollower,updateEmail } = require('../controllers/userController')
 const authMiddleware = require('../middlewares/authMiddleware')
 
 
@@ -14,6 +14,8 @@ router.get('/weeklyStats', getWeeklyUserStats) //get stats users
 
 router.post('/addWeight', authMiddleware, addWeight) //add weight
 router.put('/update', authMiddleware, updateProfile) //update user profile
+router.put('/update', authMiddleware, updateEmail) //update user profile
+
 router.put('/updatePassword', authMiddleware, updatePassword) //update user password
 router.delete('/remove', authMiddleware, removeUser) //delete user account
 

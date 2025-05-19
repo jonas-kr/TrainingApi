@@ -220,6 +220,30 @@ const updateProfile = async (req, res) => {
     }
 };
 
+const updateEmail = async (req, res) => {
+    const { email, password } = req.body;
+    const userId = req.user.userId;
+    if (!email || !password) {
+        return res.status(400).json({ message: "All fields must be filled" })
+    }
+    try {
+        const user = await User.findOne({ userId });
+
+        const validPassword = await bcrypt.compare(password, user.password)
+        if (!validPassword) {
+            return res.status(400).json({ message: "Incorrect password" })
+        }
+
+        user.email = email;
+
+        await user.save();
+        const { password, ...userWithNoPass } = user._doc
+        res.json({ message: "User email is updated successfully", user: userWithNoPass });
+    } catch (error) {
+        res.status(500).json({ message: `Server error: ${error.message}` });
+    }
+};
+
 const updatePassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user.userId;
@@ -340,5 +364,5 @@ const getUsers = async (req, res) => {
 module.exports = {
     getUser, getUserFollowing, getUserFollowers, followUnfollowUser, getPopularUsers, addWeight, updateProfile,
     updatePassword, removeUser, addExerciseRemoveExercise, getUserLibraryPrograms, addLibraryProgram,
-    getUserSharedPrograms, getUsers, removeFollower
+    getUserSharedPrograms, getUsers, removeFollower, updateEmail
 }
