@@ -155,7 +155,6 @@ const removeFollower = async (req, res) => {
 const getPopularUsers = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const usersFollowedByMe = req.user.following;  // This is an array of userId
 
 
         const suggestedUsers = await User.aggregate([

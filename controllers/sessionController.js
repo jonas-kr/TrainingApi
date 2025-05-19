@@ -357,6 +357,61 @@ const getSessionDetails = async (req, res) => {
     }
 }
 
+const getWeeklyHeatmap = async (req, res) => {
+    const { userId } = req.params;
+    if (!userId) return res.status(400).json({ message: "No user ID provided" });
+
+    try {
+        // Week range: Saturday to Friday
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dayOfWeek = today.getDay(); 
+        const daysSinceSaturday = (dayOfWeek + 1) % 7;
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - daysSinceSaturday);
+        startOfWeek.setHours(0, 0, 0, 0);
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        // Fetch weekly sessions for the user
+        const sessions = await Session.find({
+            user: userId,
+            createdAt: { $gte: startOfWeek, $lte: endOfWeek }
+        }).populate({
+            path: 'performedExercises.exercise',
+            model: 'Exercise',
+            localField: 'exerciseId',
+            foreignField: 'exerciseId',
+            select: "primaryMuscle secondaryMuscles exerciseName exerciseId imageUrl"
+        }).select('performedExercises');
+
+
+        // Combine all performedExercises across all sessions
+        const allExercises = [];
+        sessions.forEach(session => {
+            session.performedExercises.forEach(exercise => {
+                allExercises.push(exercise);
+            });
+        });
+        console.log(allExercises)
+
+        // Pass the full array to your existing function
+        const heatmap = calcHeatmap(allExercises);
+
+        res.status(200).json({
+            heatmap,
+            range: { from: startOfWeek, to: endOfWeek },
+            totalExercises: allExercises.length
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: `Server error: ${error.message}` });
+    }
+};
+
+
+
 const getSessionLikes = async (req, res) => {
     const { sessionId } = req.params
     if (!sessionId) return res.status(400).json({ message: "No Id was provided" });
@@ -534,5 +589,6 @@ const getWeeklyUserStats = async (req, res) => {
 
 module.exports = {
     getSessions, getHomeFeed, addSession, editSession, deleteSession, likeUnlikeSession,
-    addComment, getSessionDetails, getUserStats, getSessionLikes, getSessionComments, getWeeklyUserStats, getComments
+    addComment, getSessionDetails, getUserStats, getSessionLikes, getSessionComments, getWeeklyUserStats,
+    getComments, getWeeklyHeatmap
 }
