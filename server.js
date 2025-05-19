@@ -67,8 +67,6 @@ app.post("/sendEmail", async (req, res) => {
 
 
 
-
-
 //Connect to database and start listening
 mongoose.connect(process.env.DB_URI).then(() => {
     app.listen(port, () => {
