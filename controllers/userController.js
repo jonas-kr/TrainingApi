@@ -198,13 +198,12 @@ const addWeight = async (req, res) => {
 }
 
 const updateProfile = async (req, res) => {
-    const { email, username, birthdate, gender, height, bio, profilePic } = req.body;
+    const { username, birthdate, gender, height, bio, profilePic } = req.body;
     const userId = req.user.userId;
 
     try {
         const user = await User.findOne({ userId });
 
-        if (email) user.email = email;
         if (username) user.username = username
         if (birthdate) user.birthdate = birthdate;
         if (bio) user.bio = bio;
