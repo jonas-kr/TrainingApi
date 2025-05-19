@@ -37,7 +37,7 @@ const addExerciseProgress = async ({ userId, sessionId, sets, exerciseId, heavie
         if (!progress) {
 
             await Progress.create({
-                user: userId, exercise: exerciseId, history: [{sessionId, sets}],
+                user: userId, exercise: exerciseId, history: [{ sessionId, sets }],
                 heaviestWeight: { value: heaviestWeight, workout: sessionId },
                 bestOneRM: { value: bestOneRM, workout: sessionId },
                 bestSetVolume: { value: bestSetVolume, workout: sessionId },
@@ -59,7 +59,7 @@ const addExerciseProgress = async ({ userId, sessionId, sets, exerciseId, heavie
         }
 
     } catch (error) {
-        console.log({ message: `Server error: ${error.message}` })
+        res.status(500).json({ message: `Server error: ${error.message}` })
     }
 }
 
@@ -86,8 +86,12 @@ const getExerciseHistory = async (req, res) => {
         if (!progress) {
             return res.status(200).json({ message: "There is no progress" });
         }
+        console.log(progress);
+        
+        const sortedHistory = progress.history.sort((a, b) => new Date(b.sessionId.date) - new Date(a.sessionId.date));
 
-        return res.status(200).json({ history: progress.history });
+
+        return res.status(200).json({ history: sortedHistory });
 
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` });

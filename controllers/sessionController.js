@@ -415,7 +415,7 @@ const getUserStats = async (req, res) => {
         if (allTime !== "true" && allTime !== true) {
             const weekAgo = new Date();
             weekAgo.setDate(weekAgo.getDate() - 7 * parseInt(nbrWeeks));
-            filter.createdAt = { $gte: weekAgo };
+            filter.date = { $gte: weekAgo };
         }
 
         const sessions = await Session.find(filter);
@@ -460,7 +460,7 @@ const getWeeklyUserStats = async (req, res) => {
             // Fetch earliest session to determine start date
             const firstSession = await Session.findOne({ user: userId }).sort({ date: 1 });
             if (firstSession) {
-                startDate = new Date(firstSession.createdAt);
+                startDate = new Date(firstSession.date);
             }
         } else {
             startDate.setDate(startDate.getDate() - 7 * numberOfWeeks);
@@ -471,14 +471,14 @@ const getWeeklyUserStats = async (req, res) => {
 
         const sessions = await Session.find({
             user: userId,
-            createdAt: { $gte: startDate, $lte: today }
+            date: { $gte: startDate, $lte: today }
         });
 
         const weeksMap = new Map();
 
         // Group sessions into weeks
         sessions.forEach(session => {
-            const [year, weekNumber] = getWeekNumber(new Date(session.createdAt));
+            const [year, weekNumber] = getWeekNumber(new Date(session.date));
             const key = `${year}-W${weekNumber}`;
 
             if (!weeksMap.has(key)) {
