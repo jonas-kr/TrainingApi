@@ -203,7 +203,7 @@ const updateProfile = async (req, res) => {
 
     try {
         const user = await User.findOne({ userId });
-
+        
         if (username) user.username = username
         if (birthdate) user.birthdate = birthdate;
         if (bio) user.bio = bio;

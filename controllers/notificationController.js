@@ -5,9 +5,17 @@ const getNotifications = async (req, res) => {
     const userId = req.user.userId;
     if (!userId) return res.status(400).json({ message: "No userId was provided" });
 
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, like, comment, save, follow } = req.query;
+    let arr = []
+    if (like == "true") arr.push("like")
+    if (comment == "true") arr.push("comment")
+    if (save == "true") arr.push("save")
+    if (follow == "true") arr.push("follow")
 
-    const query = { to: userId };
+    const query = {
+        to: userId,
+        type: { $in: arr }
+    }
 
     try {
         const count = await Notification.countDocuments(query);
@@ -53,7 +61,7 @@ const readNotification = async (req, res) => {
 
 
         await notification.save();
-        
+
         const updatedNotification = await Notification.findOne({ notificationId }).populate({
             path: 'from',
             model: 'User',
