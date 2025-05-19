@@ -14,7 +14,7 @@ const getNotifications = async (req, res) => {
 
     const query = {
         to: userId,
-        type: { $in: arr }
+        notificationType: { $in: arr }
     }
 
     try {
@@ -31,7 +31,7 @@ const getNotifications = async (req, res) => {
                 model: 'User',
                 localField: 'userId',
                 foreignField: 'userId',
-                select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following -createdAt -email -updatedAt -resetCode"
+                select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following -createdAt -email -updatedAt -resetCode, -createdAt, -updatedAt -height -bio"
             }).exec();
 
         return res.status(200).json({
@@ -59,18 +59,9 @@ const readNotification = async (req, res) => {
 
         notification.isSeen = true;
 
-
         await notification.save();
 
-        const updatedNotification = await Notification.findOne({ notificationId }).populate({
-            path: 'from',
-            model: 'User',
-            localField: 'userId',
-            foreignField: 'userId',
-            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following -createdAt -email -updatedAt -resetCode"
-        }).exec();
-
-        res.json({ message: "notification updated successfully", notification: updatedNotification });
+        res.status(200).json({ message: "notification updated successfully" });
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` })
     }
@@ -81,19 +72,13 @@ const deleteNotification = async (req, res) => {
     const userId = req.user.userId
 
     try {
-        const notification = await Notification.findOne({ notificationId }).populate({
-            path: 'from',
-            model: 'User',
-            localField: 'userId',
-            foreignField: 'userId',
-            select: "-password -_id -__v -weight -favoriteExercises -programLibrary	-followers -following -createdAt -email -updatedAt -resetCode"
-        }).exec();
+        const notification = await Notification.findOne({ notificationId })
 
         if (notification.to !== userId) return res.status(400).json({ message: "you can't delete this notification" })
 
         await Notification.deleteOne({ notificationId });
 
-        res.json({ message: "notification deleted successfully", notification });
+        res.status(200).json({ message: "notification deleted successfully"});
     } catch (error) {
         res.status(500).json({ message: `Server error: ${error.message}` })
     }

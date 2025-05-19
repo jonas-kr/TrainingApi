@@ -4,6 +4,8 @@ const Exercise = require("../models/Exercise")
 const getExercises = async (req, res) => {
     const { page = 1, limit = 10, exerciseName, targetMuscle, equipment } = req.query;
 
+    console.log('exercise:', exerciseName);
+
     const query = {};
     if (exerciseName) query.exerciseName = { $regex: exerciseName, $options: 'i' }; // case-insensitive search
     if (targetMuscle) query.primaryMuscle = targetMuscle;

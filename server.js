@@ -15,7 +15,6 @@ const exerciseRoute = require('./routes/exerciseRoute')
 const programRoute = require('./routes/programRoute')
 const sessionRoute = require('./routes/sessionRoute')
 const progressRoute = require('./routes/progressRoute')
-const notificationRoute = require('./routes/notificationRoute')
 
 
 
@@ -38,7 +37,6 @@ app.use('/api/exercise', exerciseRoute)
 app.use('/api/program', programRoute)
 app.use('/api/session', sessionRoute)
 app.use('/api/progress', progressRoute)
-app.use('/api/notification', notificationRoute)
 
 
 
@@ -63,6 +61,8 @@ app.post("/sendEmail", async (req, res) => {
         res.status(500).json({ message: `Server error: ${error.message}` })
     }
 })
+
+
 
 
 

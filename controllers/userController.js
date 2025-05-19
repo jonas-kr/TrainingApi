@@ -111,14 +111,14 @@ const followUnfollowUser = async (req, res) => {
             await User.updateOne({ userId }, { $pull: { followers: currentUser.userId } });
             await User.updateOne({ userId: currentUser.userId }, { $pull: { following: userId } });
 
-            await Notification.deleteOne({ type: "follow", from: req.user.userId, to: userId })
+            await Notification.deleteOne({ notificationType: "follow", from: req.user.userId, to: userId, date: new Date() })
 
             res.status(200).json({ message: "User unfollowed successfully", followed: false })
         } else { //follow
             await User.updateOne({ userId }, { $push: { followers: currentUser.userId } });
             await User.updateOne({ userId: currentUser.userId }, { $push: { following: userId } });
             //send Notification to user
-            await Notification.create({ type: "follow", from: req.user.userId, to: userId })
+            await Notification.create({ notificationType: "follow", from: req.user.userId, to: userId, date: new Date() })
 
             res.status(200).json({ message: "User followed successfully", followed: true })
         }
@@ -142,7 +142,7 @@ const removeFollower = async (req, res) => {
             await User.updateOne({ userId }, { $pull: { following: currentUser.userId } });
             await User.updateOne({ userId: currentUser.userId }, { $pull: { followers: userId } });
 
-            res.status(200).json({ message: "removed follower successfully", followed: false })
+            res.status(200).json({ message: "removed follower successfully", removed: true })
         } else {
             res.status(200).json({ message: "This user is not following you" })
         }
@@ -161,16 +161,24 @@ const getPopularUsers = async (req, res) => {
         const suggestedUsers = await User.aggregate([
             {
                 $match: {
-                    _id: { $ne: userId, $nin: usersFollowedByMe }, // Exclude current user and followed users
+                    userId: { $ne: userId },
                 },
             },
             {
-                $sample: { size: 10 }, // Get a random sample of 10 users
+                $addFields: {
+                    followersCount: { $size: "$followers" },
+                },
+            },
+            {
+                $sort: { followersCount: -1 },
+            },
+            {
+                $limit: 6,
             },
             {
                 $project: {
-                    password: 0, // Exclude password field
-                    __v: 0 // Optionally exclude the version key
+                    password: 0,
+                    __v: 0,
                 },
             },
         ]);
@@ -327,8 +335,8 @@ const addLibraryProgram = async (req, res) => {
             createdBy: program.createdBy, savedBy: userId
         })
         await Notification.create({
-            type: "save", from: req.user.userId, to: program.createdBy,
-            context: programId
+            notificationType: "save", from: req.user.userId, to: program.createdBy,
+            context: programId, date: new Date(),
         })
 
         res.status(201).json({ message: "Program succesfully created", libraryProgram })
@@ -338,8 +346,12 @@ const addLibraryProgram = async (req, res) => {
 }
 
 const getUsers = async (req, res) => {
-    const { username } = req.params;
-    if (!username) return res.status(400).json({ message: "No username was provided" });
+    const { username } = req.query;
+    console.log('username: ',username)
+
+    if (!username || username.trim() === '') {
+        return res.status(201).json({ message: "Username query parameter is required" });
+    }
 
     try {
         const query = {
@@ -349,7 +361,7 @@ const getUsers = async (req, res) => {
         const users = await User.find(query).select('-password');
 
         if (!users || users.length === 0) {
-            return res.status(404).json({ message: "No users were found" });
+            return res.status(201).json({ message: "No users were found" });
         }
 
         res.status(200).json({ users });

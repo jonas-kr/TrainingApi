@@ -53,13 +53,13 @@ const addExerciseProgress = async ({ userId, sessionId, sets, exerciseId, heavie
             if (bestSessionVolume > progress.bestSessionVolume.value) progress.bestSessionVolume = { value: bestSessionVolume, workout: sessionId };
             progress.totalReps += totalReps;
             progress.totalVolume += totalVolume;
-            progress.history.push(sessionId)
+            progress.history.push({ sessionId, sets })
 
             await progress.save()
         }
 
     } catch (error) {
-        res.status(500).json({ message: `Server error: ${error.message}` })
+        console.log(error)
     }
 }
 

@@ -169,7 +169,7 @@ const addSession = async (req, res) => {
 
 
             addExerciseProgress({
-                userId, sessionId: session.sessionId, sets, exerciseId: exercise, heaviestWeight,
+                userId, sessionId: parseInt(session.sessionId), sets, exerciseId: exercise, heaviestWeight,
                 bestOneRM, bestSetVolume, bestSessionVolume: totalVolume, totalReps, totalVolume
             })
 
@@ -243,8 +243,8 @@ const likeUnlikeSession = async (req, res) => {
         if (isLiked) {//dislike
             await Session.updateOne({ sessionId }, { $pull: { likes: userId } });
             await Notification.deleteOne({
-                type: "like", from: req.user.userId, to: session.user,
-                session: sessionId
+                notificationType: "like", from: req.user.userId, to: session.user,
+                context: sessionId,
             })
 
             res.status(200).json({ message: "User disliked session successfully", liked: false })
@@ -253,8 +253,8 @@ const likeUnlikeSession = async (req, res) => {
             if (req.user.userId != session.user) {
 
                 await Notification.create({
-                    type: "like", from: req.user.userId, to: session.user,
-                    session: sessionId
+                    notificationType: "like", from: req.user.userId, to: session.user,
+                    context: sessionId, date: new Date()
                 })
             }
 
@@ -281,8 +281,8 @@ const addComment = async (req, res) => {
         if (req.user.userId != session.user) {
 
             await Notification.create({
-                type: "comment", from: req.user.userId, to: session.user,
-                context: sessionId
+                notificationType: "comment", from: req.user.userId, to: session.user,
+                context: sessionId, date: new Date()
             })
         }
 

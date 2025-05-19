@@ -45,7 +45,12 @@ const getTopRatedPrograms = async (req, res) => {
                 $sort: { avgRating: -1 }
             },
             {
-                $limit: 10
+                $limit: 6
+            },
+            {
+                $match: {
+                    isPrivate: false
+                }
             }
         ]);
 

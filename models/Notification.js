@@ -16,7 +16,7 @@ const notificationSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-    type: {
+    notificationType: {
         type: String,
         required: true,
         enum: ['follow', 'like', 'comment', 'save']
@@ -25,6 +25,7 @@ const notificationSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    date: { type: Date },
     context: {
         type: Number,
     },
